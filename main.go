@@ -114,6 +114,9 @@ func ejectConnection(currentConn *WebSocketConnection, room string) {
 		return each == currentConn
 	})
 	rooms[room] = filtered.([]*WebSocketConnection)
+	if len(rooms[room]) == 0 {
+		delete(rooms, room)
+	}
 }
 
 func broadcastMessage(currentConn *WebSocketConnection, room string, kind, message string) {
