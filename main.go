@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -59,6 +60,21 @@ func main() {
 		rooms[room] = append(rooms[room], &currentConn)
 
 		go handleIO(&currentConn, room)
+	})
+
+	http.HandleFunc("/rooms", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+
+		if r.Method == http.MethodGet {
+			result, err := json.Marshal(rooms)
+			if err != nil {
+				http.Error(w, err.Error(), http.StatusInternalServerError)
+				return
+			}
+			w.Write(result)
+			return
+		}
+		http.Error(w, "", http.StatusBadRequest)
 	})
 
 	fmt.Println("Server starting at :8080")
