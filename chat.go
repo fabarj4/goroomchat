@@ -1,9 +1,8 @@
-package main
+package goroomchat
 
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"net/http"
 	"strings"
@@ -36,49 +35,34 @@ type WebSocketConnection struct {
 	Username string
 }
 
-func main() {
-	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		content, err := ioutil.ReadFile("index.html")
+func HandleWS(w http.ResponseWriter, r *http.Request) {
+	currentGorillaConn, err := websocket.Upgrade(w, r, w.Header(), 1024, 1024)
+	if err != nil {
+		http.Error(w, "Could not open websocket connection", http.StatusBadRequest)
+	}
+
+	username := r.URL.Query().Get("username")
+	room := r.URL.Query().Get("room")
+
+	currentConn := WebSocketConnection{Conn: currentGorillaConn, Username: username}
+	rooms[room] = append(rooms[room], &currentConn)
+
+	go handleIO(&currentConn, room)
+}
+
+func HandleRooms(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+
+	if r.Method == http.MethodGet {
+		result, err := json.Marshal(rooms)
 		if err != nil {
-			http.Error(w, "Could not open requested file", http.StatusInternalServerError)
+			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
-
-		fmt.Fprintf(w, "%s", content)
-	})
-
-	http.HandleFunc("/ws", func(w http.ResponseWriter, r *http.Request) {
-		currentGorillaConn, err := websocket.Upgrade(w, r, w.Header(), 1024, 1024)
-		if err != nil {
-			http.Error(w, "Could not open websocket connection", http.StatusBadRequest)
-		}
-
-		username := r.URL.Query().Get("username")
-		room := r.URL.Query().Get("room")
-
-		currentConn := WebSocketConnection{Conn: currentGorillaConn, Username: username}
-		rooms[room] = append(rooms[room], &currentConn)
-
-		go handleIO(&currentConn, room)
-	})
-
-	http.HandleFunc("/rooms", func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Type", "application/json")
-
-		if r.Method == http.MethodGet {
-			result, err := json.Marshal(rooms)
-			if err != nil {
-				http.Error(w, err.Error(), http.StatusInternalServerError)
-				return
-			}
-			w.Write(result)
-			return
-		}
-		http.Error(w, "", http.StatusBadRequest)
-	})
-
-	fmt.Println("Server starting at :8080")
-	http.ListenAndServe(":8080", nil)
+		w.Write(result)
+		return
+	}
+	http.Error(w, "", http.StatusBadRequest)
 }
 
 func handleIO(currentConn *WebSocketConnection, room string) {
