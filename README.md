@@ -3,11 +3,17 @@
 # Features
   - setiap user menggunakan username
   - percakapan dikelompokan berdasarkan room
+  
+# Menjalankan Contoh
+masuk ke folder example lalu ketikan "go run example.go"
 
-# Cara Pakai
-ws://localhost:8080/ws?username="(isi nama username)"&room="(isi nama room)" pada script file html
-nama room = usahakan angka
-nama username = bebas
+disini host yang digunakan localhost dengan port 8080 hal ini bisa disesuaikan
+
+untuk pengaksesan chat :
+localhost:8080/[nama room]/
+
+untuk melihat ruang chat yang ada : 
+localhost:8080/rooms/
 
 # Thanks
 [Noval Agung](https://github.com/novalagung/dasarpemrogramangolang) - tutorial web socket
