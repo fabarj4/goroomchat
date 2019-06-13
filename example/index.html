@@ -86,6 +86,11 @@
               room = pathName.split("/")[pathName.split("/").length - 2];
             }
 
+            if(room === ""){
+              alert('Room name cannot be empty')
+              return
+            }
+
             var name = prompt('Enter your name please:') || "No name"
             document.querySelector('.username').innerText = name
             app.container = document.querySelector('.container')
