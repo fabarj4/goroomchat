@@ -77,10 +77,19 @@
                 alert('Your browser does not support WebSocket')
                 return
             }
+
+            var host = window.location.host;
+            var pathName = window.location.pathname;
+
+            var room = pathName.split("/")[pathName.split("/").length - 1];
+            if(room === ""){
+              room = pathName.split("/")[pathName.split("/").length - 2];
+            }
+
             var name = prompt('Enter your name please:') || "No name"
             document.querySelector('.username').innerText = name
             app.container = document.querySelector('.container')
-            app.ws = new WebSocket("ws://localhost:8080/ws?username=" + name + "&room=2")
+            app.ws = new WebSocket("ws://" + host + "/ws?username=" + name + "&room=" + room)
             app.ws.onopen = function() {
                 var message = '<b>me</b>: connected'
                 app.print(message)
