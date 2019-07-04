@@ -50,6 +50,10 @@ func HandleWS(w http.ResponseWriter, r *http.Request) {
 	go handleIO(&currentConn, room)
 }
 
+func Rooms() map[string][]*WebSocketConnection {
+	return rooms
+}
+
 func HandleRooms(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
@@ -114,5 +118,8 @@ func broadcastMessage(currentConn *WebSocketConnection, room string, kind, messa
 			Type:    kind,
 			Message: message,
 		})
+
+		fmt.Println(rooms)
+
 	}
 }
