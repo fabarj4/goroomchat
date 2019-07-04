@@ -35,6 +35,11 @@ type WebSocketConnection struct {
 	Username string
 }
 
+type Rooms struct {
+	Name   string `json:"name"`
+	Status string `json:"status"`
+}
+
 func HandleWS(w http.ResponseWriter, r *http.Request) {
 	currentGorillaConn, err := websocket.Upgrade(w, r, w.Header(), 1024, 1024)
 	if err != nil {
@@ -50,12 +55,18 @@ func HandleWS(w http.ResponseWriter, r *http.Request) {
 	go handleIO(&currentConn, room)
 }
 
-func Rooms() map[string][]*WebSocketConnection {
-	return rooms
+func GetRooms() []*Rooms {
+	var result []*Rooms
+	for roomName, _ := range rooms {
+		temp := &Rooms{Name: roomName, Status: "online"}
+		result = append(result, temp)
+	}
+	return result
 }
 
 func HandleRooms(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
 
 	if r.Method == http.MethodGet {
 		result, err := json.Marshal(rooms)
