@@ -22,12 +22,15 @@ var rooms = make(map[string][]*WebSocketConnection)
 
 type SocketPayload struct {
 	Message string
+	Room    string
+	To      string
 }
 
 type SocketResponse struct {
 	From    string
 	Type    string
 	Message string
+	To      string
 }
 
 type WebSocketConnection struct {
@@ -38,21 +41,6 @@ type WebSocketConnection struct {
 type Rooms struct {
 	Name   string `json:"name"`
 	Status string `json:"status"`
-}
-
-func HandleWS(w http.ResponseWriter, r *http.Request) {
-	currentGorillaConn, err := websocket.Upgrade(w, r, w.Header(), 1024, 1024)
-	if err != nil {
-		http.Error(w, "Could not open websocket connection", http.StatusBadRequest)
-	}
-
-	username := r.URL.Query().Get("username")
-	room := r.URL.Query().Get("room")
-
-	currentConn := WebSocketConnection{Conn: currentGorillaConn, Username: username}
-	rooms[room] = append(rooms[room], &currentConn)
-
-	go handleIO(&currentConn, room)
 }
 
 func GetRooms() []*Rooms {
@@ -80,6 +68,24 @@ func HandleRooms(w http.ResponseWriter, r *http.Request) {
 	http.Error(w, "", http.StatusBadRequest)
 }
 
+func HandleWS(w http.ResponseWriter, r *http.Request) {
+	currentGorillaConn, err := websocket.Upgrade(w, r, w.Header(), 1024, 1024)
+	if err != nil {
+		http.Error(w, "Could not open websocket connection", http.StatusBadRequest)
+	}
+
+	username := r.URL.Query().Get("username")
+	room := r.URL.Query().Get("room")
+	to := r.URL.Query().Get("to")
+
+	fmt.Println(to)
+
+	currentConn := WebSocketConnection{Conn: currentGorillaConn, Username: username}
+	rooms[room] = append(rooms[room], &currentConn)
+
+	go handleIO(&currentConn, room)
+}
+
 func handleIO(currentConn *WebSocketConnection, room string) {
 
 	defer func() {
@@ -88,14 +94,14 @@ func handleIO(currentConn *WebSocketConnection, room string) {
 		}
 	}()
 
-	broadcastMessage(currentConn, room, MESSAGE_NEW_USER, "")
+	// broadcastMessage(currentConn, room, MESSAGE_NEW_USER, "")
 
 	for {
 		payload := SocketPayload{}
 		err := currentConn.ReadJSON(&payload)
 		if err != nil {
 			if strings.Contains(err.Error(), "websocket: close") {
-				broadcastMessage(currentConn, room, MESSAGE_LEAVE, "")
+				broadcastMessage(currentConn, room, payload.To, MESSAGE_LEAVE, "")
 				ejectConnection(currentConn, room)
 				return
 			}
@@ -103,8 +109,9 @@ func handleIO(currentConn *WebSocketConnection, room string) {
 			log.Println("ERROR", err.Error())
 			continue
 		}
+		fmt.Println(payload)
 
-		broadcastMessage(currentConn, room, MESSAGE_CHAT, payload.Message)
+		broadcastMessage(currentConn, room, payload.To, MESSAGE_CHAT, payload.Message)
 	}
 }
 
@@ -118,7 +125,7 @@ func ejectConnection(currentConn *WebSocketConnection, room string) {
 	}
 }
 
-func broadcastMessage(currentConn *WebSocketConnection, room string, kind, message string) {
+func broadcastMessage(currentConn *WebSocketConnection, room, to, kind, message string) {
 	for _, eachConn := range rooms[room] {
 		if eachConn == currentConn {
 			continue
@@ -128,9 +135,8 @@ func broadcastMessage(currentConn *WebSocketConnection, room string, kind, messa
 			From:    currentConn.Username,
 			Type:    kind,
 			Message: message,
+			To:      to,
 		})
-
-		fmt.Println(rooms)
 
 	}
 }

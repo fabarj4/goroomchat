@@ -56,6 +56,15 @@
 
     <script type="text/javascript">
         var app = {}
+        var name = "";
+        var host = window.location.host;
+        var pathName = window.location.pathname;
+        var to = window.location.search.split("?to=")[1];
+        var room = pathName.split("/")[pathName.split("/").length - 1];
+        if(room === ""){
+          room = pathName.split("/")[pathName.split("/").length - 2];
+        }
+
         app.ws = undefined
         app.container = undefined
         app.print = function (message) {
@@ -66,7 +75,9 @@
         app.doSendMessage = function () {
             var messageRaw = document.querySelector('.input-message').value
             app.ws.send(JSON.stringify({
-                Message: messageRaw
+                Message: messageRaw,
+                Room: room,
+                To: to
             }));
             var message = '<b>me</b>: ' + messageRaw
             app.print(message)
@@ -78,38 +89,39 @@
                 return
             }
 
-            var host = window.location.host;
-            var pathName = window.location.pathname;
-
-            var room = pathName.split("/")[pathName.split("/").length - 1];
-            if(room === ""){
-              room = pathName.split("/")[pathName.split("/").length - 2];
-            }
-
-            if(room === ""){
-              alert('Room name cannot be empty')
+            if(room === "" && to === ""){
+              alert('Room or To cannot be empty')
               return
             }
 
-            var name = prompt('Enter your name please:') || "No name"
+            name = prompt('Enter your name please:') || "No name"
             document.querySelector('.username').innerText = name
             app.container = document.querySelector('.container')
-            app.ws = new WebSocket("ws://" + host + "/ws?username=" + name + "&room=" + room)
+            app.ws = new WebSocket("ws://" + host + "/ws?username=" + name + "&room=" + room + "&to=" + to);
             app.ws.onopen = function() {
                 var message = '<b>me</b>: connected'
                 app.print(message)
             }
             app.ws.onmessage = function (event) {
-                var res = JSON.parse(event.data)
-                var messsage = ''
-                if (res.Type === 'New User') {
-                    message = 'User <b>' + res.From + '</b>: connected'
-                } else if (res.Type === 'Leave') {
-                    message = 'User <b>' + res.From + '</b>: disconnected'
-                } else {
-                    message = '<b>' + res.From + '</b>: ' + res.Message
+                var res = JSON.parse(event.data);
+                var messsage = '';
+                if(room != ""){
+                  if (res.Type === 'New User') {
+                      message = 'User <b>' + res.From + '</b>: connected'
+                  } else if (res.Type === 'Leave') {
+                      message = 'User <b>' + res.From + '</b>: disconnected'
+                  } else {
+                      message = '<b>' + res.From + '</b>: ' + res.Message
+                  }
+                  app.print(message)
+                }else if(res.From == to && res.To == name) {
+                  if (res.Type === 'Leave') {
+                      message = 'User <b>' + res.From + '</b>: disconnected'
+                  } else {
+                      message = '<b>' + res.From + '</b>: ' + res.Message
+                  }
+                  app.print(message)
                 }
-                app.print(message)
             }
             app.ws.onclose = function () {
                 var message = '<b>me</b>: disconnected'
