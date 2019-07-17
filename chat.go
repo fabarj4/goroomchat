@@ -3,8 +3,10 @@ package goroomchat
 import (
 	"encoding/json"
 	"fmt"
+	"io"
 	"log"
 	"net/http"
+	"os"
 	"strings"
 
 	"github.com/gorilla/websocket"
@@ -94,6 +96,39 @@ func handleIO(currentConn *WebSocketConnection, room string) {
 		}
 	}()
 
+	//buat log pertama kali untuk user
+	// path := fmt.Sprintf("/log/%s.txt", currentConn.Username)
+	folderName := "log"
+
+	_, err := os.Stat(folderName)
+	if os.IsNotExist(err) {
+		if err := os.Mkdir(folderName, os.FileMode(0644)); err != nil {
+			fmt.Println(err.Error())
+			return
+		}
+	}
+
+	path := fmt.Sprintf("%s/%s.txt", folderName, currentConn.Username)
+	_, err = os.Stat(path)
+	if os.IsNotExist(err) {
+		file, err := os.Create(path)
+		if err != nil {
+			fmt.Println(err.Error())
+			return
+		}
+		defer file.Close()
+	}
+	//
+	// var _, err = os.Stat(path)
+	// if os.IsNotExist(err) {
+	// 	file, err := os.Create(path)
+	// 	if err != nil {
+	// 		fmt.Println(err.Error())
+	// 		return
+	// 	}
+	// 	defer file.Close()
+	// }
+
 	// broadcastMessage(currentConn, room, MESSAGE_NEW_USER, "")
 
 	for {
@@ -109,6 +144,13 @@ func handleIO(currentConn *WebSocketConnection, room string) {
 			log.Println("ERROR", err.Error())
 			continue
 		}
+
+		//memasukan chat ke dalam log file
+		if err := writeToLog(currentConn.Username, payload.To, payload.Message); err != nil {
+			fmt.Println(err.Error())
+			return
+		}
+
 		fmt.Println(payload)
 
 		broadcastMessage(currentConn, room, payload.To, MESSAGE_CHAT, payload.Message)
@@ -126,6 +168,7 @@ func ejectConnection(currentConn *WebSocketConnection, room string) {
 }
 
 func broadcastMessage(currentConn *WebSocketConnection, room, to, kind, message string) {
+
 	for _, eachConn := range rooms[room] {
 		if eachConn == currentConn {
 			continue
@@ -139,4 +182,53 @@ func broadcastMessage(currentConn *WebSocketConnection, room, to, kind, message 
 		})
 
 	}
+}
+
+func writeToLog(from, to, message string) error {
+	//pencatatan log pengirim
+	path := fmt.Sprintf("log/%s.txt", from)
+	file, err := os.OpenFile(path, os.O_RDWR, 0644)
+	if err != nil {
+		return err
+	}
+
+	var text = make([]byte, 1024)
+	for {
+		n, err := file.Read(text)
+		if err != nil {
+			return err
+		}
+		if err != io.EOF {
+			if err != nil {
+				break
+			}
+		}
+		if n == 0 {
+			break
+		}
+	}
+	fmt.Println(text)
+	messageData := fmt.Sprintf(`{"from":"%s", "type":"%s", "message":"%s", "to":"%s"}`, from, MESSAGE_CHAT, message, to)
+	if _, err := file.WriteString(messageData); err != nil {
+		return err
+	}
+	if err := file.Close(); err != nil {
+		return err
+	}
+
+	//pencatatan log penerima
+	path = fmt.Sprintf("log/%s.txt", to)
+	file, err = os.OpenFile(path, os.O_RDWR, 0644)
+	if err != nil {
+		return err
+	}
+	messageData = fmt.Sprintf(`{"from":"%s", "type":"%s", "message":"%s", "to":"%s"}`, to, MESSAGE_CHAT, message, from)
+	if _, err := file.WriteString(messageData); err != nil {
+		return err
+	}
+	if err := file.Close(); err != nil {
+		return err
+	}
+
+	return nil
 }
