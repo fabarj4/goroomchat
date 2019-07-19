@@ -1,6 +1,7 @@
 package goroomchat
 
 import (
+	"bufio"
 	"encoding/json"
 	"fmt"
 	"log"
@@ -14,24 +15,25 @@ import (
 
 type M map[string]interface{}
 
-const MESSAGE_NEW_USER = "New User"
-const MESSAGE_CHAT = "Chat"
-const MESSAGE_LEAVE = "Leave"
+const MESSAGE_NEW_LOGIN = "new_login"
+const MESSAGE_CHAT = "chat"
+const MESSAGE_LEAVE = "leave"
+const MESSAGE_LOG = "log"
 
 // var connections = make([]*WebSocketConnection, 0)
 var rooms = make(map[string][]*WebSocketConnection)
 
 type SocketPayload struct {
-	Message string
-	Room    string
-	To      string
+	Message string `json:"message"`
+	Room    string `json:"room"`
+	To      string `json:"to"`
 }
 
 type SocketResponse struct {
-	From    string
-	Type    string
-	Message string
-	To      string
+	From    string `json:"from"`
+	Type    string `json:"type"`
+	Message string `json:"message"`
+	To      string `json:"to"`
 }
 
 type WebSocketConnection struct {
@@ -77,9 +79,7 @@ func HandleWS(w http.ResponseWriter, r *http.Request) {
 
 	username := r.URL.Query().Get("username")
 	room := r.URL.Query().Get("room")
-	to := r.URL.Query().Get("to")
-
-	fmt.Println(to)
+	// to := r.URL.Query().Get("to")
 
 	currentConn := WebSocketConnection{Conn: currentGorillaConn, Username: username}
 	rooms[room] = append(rooms[room], &currentConn)
@@ -100,12 +100,32 @@ func handleIO(currentConn *WebSocketConnection, room string) {
 		fmt.Println(err.Error())
 		return
 	}
+
+	//ambil data dari log
+	dataLogString, err := readLog(currentConn.Username)
+	if err != nil {
+		fmt.Println(err.Error())
+		return
+	}
+
+	data := []SocketResponse{}
+	if err := json.Unmarshal([]byte(dataLogString), &data); err != nil {
+		fmt.Println(err.Error())
+		return
+	}
+
+	for _, item := range data {
+		broadcastMessage(room, item.From, currentConn.Username, MESSAGE_LOG, item.Message)
+	}
+
+	fmt.Println("luar")
+
 	for {
 		payload := SocketPayload{}
 		err := currentConn.ReadJSON(&payload)
 		if err != nil {
 			if strings.Contains(err.Error(), "websocket: close") {
-				broadcastMessage(currentConn, room, payload.To, MESSAGE_LEAVE, "")
+				broadcastMessage(room, currentConn.Username, payload.To, MESSAGE_LEAVE, "")
 				ejectConnection(currentConn, room)
 				return
 			}
@@ -113,16 +133,14 @@ func handleIO(currentConn *WebSocketConnection, room string) {
 			log.Println("ERROR", err.Error())
 			continue
 		}
-
+		fmt.Println("dalam")
 		//memasukan chat ke dalam log file
-		if err := writeToLog(currentConn.Username, payload.To, payload.Message); err != nil {
+		if err := writeLog(currentConn.Username, payload.To, payload.Message); err != nil {
 			fmt.Println(err.Error())
 			return
 		}
 
-		fmt.Println(payload)
-
-		broadcastMessage(currentConn, room, payload.To, MESSAGE_CHAT, payload.Message)
+		broadcastMessage(room, currentConn.Username, payload.To, MESSAGE_CHAT, payload.Message)
 	}
 }
 
@@ -136,15 +154,15 @@ func ejectConnection(currentConn *WebSocketConnection, room string) {
 	}
 }
 
-func broadcastMessage(currentConn *WebSocketConnection, room, to, kind, message string) {
-
+func broadcastMessage(room, from, to, kind, message string) {
 	for _, eachConn := range rooms[room] {
-		if eachConn == currentConn {
+		if from == to && kind != MESSAGE_LOG {
+			// fmt.Printf("%v = %v", eachConn, currentConn)
 			continue
 		}
 
 		eachConn.WriteJSON(SocketResponse{
-			From:    currentConn.Username,
+			From:    from,
 			Type:    kind,
 			Message: message,
 			To:      to,
@@ -177,7 +195,7 @@ func createLog(username string) error {
 	return nil
 }
 
-func writeToLog(from, to, message string) error {
+func writeLog(from, to, message string) error {
 	//pencatatan log pengirim
 	logFile, err := os.OpenFile(fmt.Sprintf("log/%s.txt", from), os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 	if err != nil {
@@ -202,49 +220,24 @@ func writeToLog(from, to, message string) error {
 	if err := logFile.Close(); err != nil {
 		return err
 	}
-	// path := fmt.Sprintf("log/%s.txt", from)
-	// file, err := os.OpenFile(path, os.O_RDWR, 0644)
-	// if err != nil {
-	// 	return err
-	// }
-	//
-	// var text = make([]byte, 1024)
-	// for {
-	// 	n, err := file.Read(text)
-	// 	if err != nil {
-	// 		return err
-	// 	}
-	// 	if err != io.EOF {
-	// 		if err != nil {
-	// 			break
-	// 		}
-	// 	}
-	// 	if n == 0 {
-	// 		break
-	// 	}
-	// }
-	// fmt.Println(text)
-	// messageData := fmt.Sprintf(`{"from":"%s", "type":"%s", "message":"%s", "to":"%s"}`, from, MESSAGE_CHAT, message, to)
-	// if _, err := file.WriteString(messageData); err != nil {
-	// 	return err
-	// }
-	// if err := file.Close(); err != nil {
-	// 	return err
-	// }
-	//
-	//pencatatan log penerima
-	// path = fmt.Sprintf("log/%s.txt", to)
-	// file, err = os.OpenFile(path, os.O_RDWR, 0644)
-	// if err != nil {
-	// 	return err
-	// }
-	// messageData = fmt.Sprintf(`{"from":"%s", "type":"%s", "message":"%s", "to":"%s"}`, to, MESSAGE_CHAT, message, from)
-	// if _, err := file.WriteString(messageData); err != nil {
-	// 	return err
-	// }
-	// if err := file.Close(); err != nil {
-	// 	return err
-	// }
-
 	return nil
+}
+
+func readLog(username string) (string, error) {
+	file, err := os.Open(fmt.Sprintf("log/%s.txt", username))
+	if err != nil {
+		return "", err
+	}
+	defer file.Close()
+
+	temp := []string{}
+	scanner := bufio.NewScanner(file)
+	for scanner.Scan() {
+		temp = append(temp, scanner.Text())
+	}
+
+	if err := scanner.Err(); err != nil {
+		return "", err
+	}
+	return fmt.Sprintf("[%v]", strings.Join(temp, ",")), nil
 }

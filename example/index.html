@@ -75,9 +75,9 @@
         app.doSendMessage = function () {
             var messageRaw = document.querySelector('.input-message').value
             app.ws.send(JSON.stringify({
-                Message: messageRaw,
-                Room: room,
-                To: to
+                message: messageRaw,
+                room: room,
+                to: to
             }));
             var message = '<b>me</b>: ' + messageRaw
             app.print(message)
@@ -105,23 +105,63 @@
             app.ws.onmessage = function (event) {
                 var res = JSON.parse(event.data);
                 var messsage = '';
-                if(room != ""){
-                  if (res.Type === 'New User') {
-                      message = 'User <b>' + res.From + '</b>: connected'
-                  } else if (res.Type === 'Leave') {
-                      message = 'User <b>' + res.From + '</b>: disconnected'
-                  } else {
-                      message = '<b>' + res.From + '</b>: ' + res.Message
+                var type = res.type;
+                if(type == "new_login"){
+                  message = 'User <b>' + res.from + '</b>: connected'
+                }else if(type == "chat"){
+                  if(res.from == to && res.to == name){
+                    message = '<b>' + res.from + '</b>: ' + res.message
                   }
-                  app.print(message)
-                }else if(res.From == to && res.To == name) {
-                  if (res.Type === 'Leave') {
-                      message = 'User <b>' + res.From + '</b>: disconnected'
-                  } else {
-                      message = '<b>' + res.From + '</b>: ' + res.Message
+                }else if(type == "log" && res.to == name){
+                  if(res.from == res.to){
+                    message = '<b>me</b>: ' + res.message;
+                  }else{
+                    message = '<b>' + res.from + '</b>: ' + res.message;
                   }
-                  app.print(message)
+                }else if(type == "leave" && res.from != "" && res.to != ""){
+                  if(room != ""){
+                    message = 'User <b>' + res.From + '</b>: disconnected'
+                  }else{
+                    if(res.from == to && res.to == name){
+                      message = 'User <b>' + res.From + '</b>: disconnected'
+                    }
+                  }
                 }
+                // switch (res.type) {
+                //   case "new_login":
+                //     message = 'User <b>' + res.from + '</b>: connected'
+                //   case "chat":
+                //     if(room != ""){
+                //       message = '<b>' + res.from + '</b>: ' + res.message;
+                //     }else{
+                //       if(res.from == to && res.to == name){
+                //         message = '<b>' + res.from + '</b>: ' + res.message
+                //       }
+                //     }
+                //   case "leave":
+                //     message = 'User <b>' + res.from + '</b>: disconnected';
+                //   case "log":
+                // }
+                app.print(message);
+                message = "";
+                res = "";
+                // if(room != ""){
+                //   if (res.Type === 'New User') {
+                //       message = 'User <b>' + res.From + '</b>: connected'
+                //   } else if (res.Type === 'Leave') {
+                //       message = 'User <b>' + res.From + '</b>: disconnected'
+                //   } else {
+                //       message = '<b>' + res.From + '</b>: ' + res.Message
+                //   }
+                //   app.print(message)
+                // }else if(res.From == to && res.To == name) {
+                //   if (res.Type === 'Leave') {
+                //       message = 'User <b>' + res.From + '</b>: disconnected'
+                //   } else {
+                //       message = '<b>' + res.From + '</b>: ' + res.Message
+                //   }
+                //   app.print(message)
+                // } else if (res.Type == "From Log"){}
             }
             app.ws.onclose = function () {
                 var message = '<b>me</b>: disconnected'
