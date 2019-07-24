@@ -104,11 +104,8 @@
             }
             app.ws.onmessage = function (event) {
                 var res = JSON.parse(event.data);
-                var messsage = '';
+                var message = '';
                 var type = res.type;
-                if(res.user != name){
-                  return;
-                }
                 if(room == ""){
                   if(type == "new_login"){
                     message = 'User <b>' + res.from + '</b>: connected'
@@ -117,25 +114,9 @@
                       message = '<b>' + res.from + '</b>: ' + res.message
                     }
                   }else if(type == "log" && (res.to == name || res.from == name || res.from == to || res.to == to)){
-                    if(res.from == name && res.to == name){
-                      message = '<b>me</b>: ' + res.message;
-                    }else{
-                      message = '<b>' + res.from + '</b>: ' + res.message;
+                    if(res.user != name){
+                      return;
                     }
-                  }else if(type == "leave" && res.from != "" && res.to != ""){
-                    if(res.from == to && res.to == name){
-                      message = 'User <b>' + res.From + '</b>: disconnected'
-                    }
-                  }
-                  app.print(message);
-                }else{
-                  if(type == "new_login"){
-                    message = 'User <b>' + res.from + '</b>: connected'
-                  }else if(type == "chat"){
-                    if(res.from == to && res.to == name){
-                      message = '<b>' + res.from + '</b>: ' + res.message
-                    }
-                  }else if(type == "log" && (res.to == name || res.from == name) && res.room == room){
                     if(res.from == name){
                       message = '<b>me</b>: ' + res.message;
                     }else{
@@ -146,6 +127,29 @@
                       message = 'User <b>' + res.From + '</b>: disconnected'
                     }
                   }
+                }else{
+                  if(type == "new_login"){
+                    message = 'User <b>' + res.from + '</b>: connected'
+                  }else if(type == "chat"){
+                    if(res.from == to && res.to == name){
+                      message = '<b>' + res.from + '</b>: ' + res.message
+                    }
+                  }else if(type == "log" && (res.to == name || res.from == name) && res.room == room){
+                    if(res.user != name){
+                      return;
+                    }
+                    if(res.from == name){
+                      message = '<b>me</b>: ' + res.message;
+                    }else{
+                      message = '<b>' + res.from + '</b>: ' + res.message;
+                    }
+                  }else if(type == "leave" && res.from != "" && res.to != ""){
+                    if(res.from == to && res.to == name){
+                      message = 'User <b>' + res.From + '</b>: disconnected'
+                    }
+                  }
+                }
+                if(message != ""){
                   app.print(message);
                 }
                 message = "";
