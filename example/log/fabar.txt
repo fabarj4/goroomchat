@@ -1,10 +1,4 @@
-{"from":"admin", "type":"chat", "message":"hai", "to":"fabar"}
-{"from":"admin", "type":"chat", "message":"tes", "to":"fabar"}
-{"from":"fabar", "type":"chat", "message":"tes", "to":"admin"}
-{"from":"fabar", "type":"chat", "message":"ya", "to":"admin"}
-{"from":"fabar", "type":"chat", "message":"mau tanya min", "to":"admin"}
-{"from":"admin", "type":"chat", "message":"ya kenapa ?", "to":"fabar"}
-{"from":"fabar", "type":"chat", "message":"admin lol", "to":"admin"}
-{"from":"admin", "type":"chat", "message":"sial anda", "to":"fabar"}
-{"from":"fabar", "type":"chat", "message":"tes", "to":"admin"}
-{"from":"admin", "type":"chat", "message":"tes juga", "to":"fabar"}
+{"from":"fabar", "type":"chat", "message":"tes", "room":"grupa", "to":""}
+{"from":"admin", "type":"chat", "message":"haloo", "room":"", "to":"fabar"}
+{"from":"admin", "type":"chat", "message":"ya ?", "room":"", "to":"fabar"}
+{"from":"fabar", "type":"chat", "message":"mimin oh mimin oh", "room":"", "to":"admin"}
