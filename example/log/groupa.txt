@@ -1,0 +1,6 @@
+{"from":"fabar", "type":"chat", "message":"haii", "room":"groupa", "to":""}
+{"from":"admin", "type":"chat", "message":"ya?", "room":"groupa", "to":""}
+{"from":"fabar", "type":"chat", "message":"haloo", "room":"groupa", "to":""}
+{"from":"fabar", "type":"chat", "message":"lol", "room":"groupa", "to":""}
+{"from":"fabar", "type":"chat", "message":"tes", "room":"groupa", "to":""}
+{"from":"admin", "type":"chat", "message":"tes juga", "room":"groupa", "to":""}

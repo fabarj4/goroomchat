@@ -131,13 +131,10 @@
                   if(type == "new_login"){
                     message = 'User <b>' + res.from + '</b>: connected'
                   }else if(type == "chat"){
-                    if(res.from == to && res.to == name){
+                    if(res.from != name){
                       message = '<b>' + res.from + '</b>: ' + res.message
                     }
                   }else if(type == "log" && (res.to == name || res.from == name) && res.room == room){
-                    if(res.user != name){
-                      return;
-                    }
                     if(res.from == name){
                       message = '<b>me</b>: ' + res.message;
                     }else{
