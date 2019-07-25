@@ -194,7 +194,8 @@ func createLog(username string) error {
 		}
 	}
 
-	path := fmt.Sprintf("%s/%s.txt", folderName, username)
+	// path := fmt.Sprintf("%s/%s.txt", folderName, username)
+	path := "log/chat.txt"
 	_, err = os.Stat(path)
 	if os.IsNotExist(err) {
 		file, err := os.Create(path)
@@ -209,60 +210,61 @@ func createLog(username string) error {
 }
 
 func writeLog(from, to, room, message string) error {
-	// logFile, err := os.OpenFile(fmt.Sprintf("log/%s.txt", from), os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
-	// if err != nil {
-	// 	return err
-	// }
-	// messageData := fmt.Sprintf(`{"from":"%s", "type":"%s", "message":"%s", "room":"%s", "to":"%s"}`, from, MESSAGE_CHAT, message, room, to)
-	// if _, err := logFile.WriteString(fmt.Sprintf("%v\n", messageData)); err != nil {
-	// 	return err
-	// }
-	// if err := logFile.Close(); err != nil {
-	// 	return err
-	// }
-	if to != "" {
-		//pencatatan log pengirim
-		logFile, err := os.OpenFile(fmt.Sprintf("log/%s.txt", from), os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
-		if err != nil {
-			return err
-		}
-		messageData := fmt.Sprintf(`{"from":"%s", "type":"%s", "message":"%s", "room":"%s", "to":"%s"}`, from, MESSAGE_CHAT, message, room, to)
-		if _, err := logFile.WriteString(fmt.Sprintf("%v\n", messageData)); err != nil {
-			return err
-		}
-		if err := logFile.Close(); err != nil {
-			return err
-		}
-		//pencatatan log penerima
-		logFile, err = os.OpenFile(fmt.Sprintf("log/%s.txt", to), os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
-		if err != nil {
-			return err
-		}
-		messageData = fmt.Sprintf(`{"from":"%s", "type":"%s", "message":"%s", "room":"%s", "to":"%s"}`, from, MESSAGE_CHAT, message, room, to)
-		if _, err := logFile.WriteString(fmt.Sprintf("%v\n", messageData)); err != nil {
-			return err
-		}
-		if err := logFile.Close(); err != nil {
-			return err
-		}
-	} else {
-		logFile, err := os.OpenFile(fmt.Sprintf("log/%s.txt", room), os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
-		if err != nil {
-			return err
-		}
-		messageData := fmt.Sprintf(`{"from":"%s", "type":"%s", "message":"%s", "room":"%s", "to":"%s"}`, from, MESSAGE_CHAT, message, room, to)
-		if _, err := logFile.WriteString(fmt.Sprintf("%v\n", messageData)); err != nil {
-			return err
-		}
-		if err := logFile.Close(); err != nil {
-			return err
-		}
+	logFile, err := os.OpenFile("log/chat.txt", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	if err != nil {
+		return err
 	}
+	messageData := fmt.Sprintf(`{"from":"%s", "type":"%s", "message":"%s", "room":"%s", "to":"%s"}`, from, MESSAGE_CHAT, message, room, to)
+	if _, err := logFile.WriteString(fmt.Sprintf("%v\n", messageData)); err != nil {
+		return err
+	}
+	if err := logFile.Close(); err != nil {
+		return err
+	}
+	// if to != "" {
+	// 	//pencatatan log pengirim
+	// 	logFile, err := os.OpenFile(fmt.Sprintf("log/%s.txt", from), os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	// 	if err != nil {
+	// 		return err
+	// 	}
+	// 	messageData := fmt.Sprintf(`{"from":"%s", "type":"%s", "message":"%s", "room":"%s", "to":"%s"}`, from, MESSAGE_CHAT, message, room, to)
+	// 	if _, err := logFile.WriteString(fmt.Sprintf("%v\n", messageData)); err != nil {
+	// 		return err
+	// 	}
+	// 	if err := logFile.Close(); err != nil {
+	// 		return err
+	// 	}
+	// 	//pencatatan log penerima
+	// 	logFile, err = os.OpenFile(fmt.Sprintf("log/%s.txt", to), os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	// 	if err != nil {
+	// 		return err
+	// 	}
+	// 	messageData = fmt.Sprintf(`{"from":"%s", "type":"%s", "message":"%s", "room":"%s", "to":"%s"}`, from, MESSAGE_CHAT, message, room, to)
+	// 	if _, err := logFile.WriteString(fmt.Sprintf("%v\n", messageData)); err != nil {
+	// 		return err
+	// 	}
+	// 	if err := logFile.Close(); err != nil {
+	// 		return err
+	// 	}
+	// } else {
+	// 	logFile, err := os.OpenFile(fmt.Sprintf("log/%s.txt", room), os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	// 	if err != nil {
+	// 		return err
+	// 	}
+	// 	messageData := fmt.Sprintf(`{"from":"%s", "type":"%s", "message":"%s", "room":"%s", "to":"%s"}`, from, MESSAGE_CHAT, message, room, to)
+	// 	if _, err := logFile.WriteString(fmt.Sprintf("%v\n", messageData)); err != nil {
+	// 		return err
+	// 	}
+	// 	if err := logFile.Close(); err != nil {
+	// 		return err
+	// 	}
+	// }
 	return nil
 }
 
 func readLog(nameFile string) (string, error) {
-	file, err := os.Open(fmt.Sprintf("log/%s.txt", nameFile))
+	// file, err := os.Open(fmt.Sprintf("log/%s.txt", nameFile))
+	file, err := os.Open("log/chat.txt")
 	if err != nil {
 		return "", err
 	}

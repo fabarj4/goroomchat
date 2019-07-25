@@ -1,1 +1,0 @@
-{"from":"ad,om", "type":"chat", "message":"", "room":"", "to":""}

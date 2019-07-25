@@ -1,4 +1,0 @@
-{"from":"fabar", "type":"chat", "message":"haii", "room":"", "to":"admin"}
-{"from":"admin", "type":"chat", "message":"haii", "room":"", "to":"admin"}
-{"from":"fabar", "type":"chat", "message":"hai", "room":"", "to":"fabar"}
-{"from":"admin", "type":"chat", "message":"hai", "room":"", "to":"fabar"}

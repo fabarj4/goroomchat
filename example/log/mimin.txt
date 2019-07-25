@@ -1,2 +1,0 @@
-{"from":"mimin", "type":"chat", "message":"haloo", "room":"", "to":""}
-{"from":"mimin", "type":"chat", "message":"asd", "room":"grupa", "to":""}

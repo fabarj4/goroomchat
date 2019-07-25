@@ -1,0 +1,11 @@
+{"from":"fabar", "type":"chat", "message":"tes", "room":"", "to":"admin"}
+{"from":"admin", "type":"chat", "message":"tes juga", "room":"", "to":"fabar"}
+{"from":"veldi", "type":"chat", "message":"tes", "room":"", "to":"fabar"}
+{"from":"fabar", "type":"chat", "message":"lah kok test?", "room":"", "to":"admin"}
+{"from":"fabar", "type":"chat", "message":"haii semua ", "room":"groupa", "to":""}
+{"from":"andari", "type":"chat", "message":"haloo juga", "room":"groupa", "to":""}
+{"from":"fabar", "type":"chat", "message":"lagi siapa diapa?", "room":"groupa", "to":""}
+{"from":"andari", "type":"chat", "message":"kok ga nyambung ?", "room":"groupa", "to":""}
+{"from":"admin", "type":"chat", "message":"lagi test chat hehehe", "room":"", "to":"fabar"}
+{"from":"fabar", "type":"chat", "message":"oalah wkkwkw", "room":"", "to":"admin"}
+{"from":"veldi", "type":"chat", "message":"haloo semua", "room":"groupa", "to":""}

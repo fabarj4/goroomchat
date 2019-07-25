@@ -113,7 +113,7 @@
                     if(res.from == to && res.to == name){
                       message = '<b>' + res.from + '</b>: ' + res.message
                     }
-                  }else if(type == "log" && (res.to == name || res.from == name || res.from == to || res.to == to)){
+                  }else if(type == "log" && ((res.to == name || res.from == name) && (res.from == to || res.to == to))){
                     if(res.user != name){
                       return;
                     }
@@ -134,7 +134,7 @@
                     if(res.from != name){
                       message = '<b>' + res.from + '</b>: ' + res.message
                     }
-                  }else if(type == "log" && (res.to == name || res.from == name) && res.room == room){
+                  }else if(type == "log" &&  res.room == room && res.user == name){
                     if(res.from == name){
                       message = '<b>me</b>: ' + res.message;
                     }else{
