@@ -151,23 +151,6 @@
                 }
                 message = "";
                 res = "";
-                // if(room != ""){
-                //   if (res.Type === 'New User') {
-                //       message = 'User <b>' + res.From + '</b>: connected'
-                //   } else if (res.Type === 'Leave') {
-                //       message = 'User <b>' + res.From + '</b>: disconnected'
-                //   } else {
-                //       message = '<b>' + res.From + '</b>: ' + res.Message
-                //   }
-                //   app.print(message)
-                // }else if(res.From == to && res.To == name) {
-                //   if (res.Type === 'Leave') {
-                //       message = 'User <b>' + res.From + '</b>: disconnected'
-                //   } else {
-                //       message = '<b>' + res.From + '</b>: ' + res.Message
-                //   }
-                //   app.print(message)
-                // } else if (res.Type == "From Log"){}
             }
             app.ws.onclose = function () {
                 var message = '<b>me</b>: disconnected'
