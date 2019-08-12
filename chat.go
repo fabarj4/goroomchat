@@ -50,13 +50,8 @@ type Rooms struct {
 	Status string `json:"status"`
 }
 
-func GetRooms() []*Rooms {
-	var result []*Rooms
-	for roomName, _ := range rooms {
-		temp := &Rooms{Name: roomName, Status: "online"}
-		result = append(result, temp)
-	}
-	return result
+func GetRooms() map[string][]*WebSocketConnection {
+	return rooms
 }
 
 func HandleRooms(w http.ResponseWriter, r *http.Request) {
