@@ -106,6 +106,8 @@ func handleIO(currentConn *WebSocketConnection) {
 			ejectConnection(currentConn, payload.Room)
 		case "login":
 			rooms[payload.Room] = append(rooms[payload.Room], currentConn)
+			payload.From = currentConn.Username
+			broadcastMessage(currentConn, payload, MESSAGE_NEW_LOGIN)
 		case "log":
 			//buat log pertama kali untuk user
 			if err := createLog(currentConn.Username); err != nil {
@@ -161,7 +163,6 @@ func ejectConnection(currentConn *WebSocketConnection, room string) {
 
 func broadcastMessage(currentConn *WebSocketConnection, payload SocketPayload, kind string) {
 	for _, eachConn := range rooms[payload.Room] {
-		fmt.Println(eachConn.Username)
 		if eachConn == currentConn && kind != MESSAGE_LOG {
 			continue
 		}

@@ -127,7 +127,6 @@
             }
             app.ws.onmessage = function (event) {
                 var res = JSON.parse(event.data);
-                console.log(res);
                 var message = '';
                 var type = res.type;
                 if(room == ""){

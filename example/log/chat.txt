@@ -24,3 +24,6 @@
 {"from":"admin", "type":"chat", "message":"apa sih", "room":"helpdesk", "to":"veldi"}
 {"from":"veldi", "type":"chat", "message":"yang sopan dong", "room":"helpdesk", "to":"veldi"}
 {"from":"veldi", "type":"chat", "message":"asd", "room":"helpdesk", "to":"admin"}
+{"from":"admin", "type":"chat", "message":"yo", "room":"helpdesk", "to":"veldi"}
+{"from":"admin", "type":"chat", "message":"yo", "room":"helpdesk", "to":"veldi"}
+{"from":"fabar", "type":"chat", "message":"tes", "room":"helpdesk", "to":"admin"}
