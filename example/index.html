@@ -65,6 +65,16 @@
           room = pathName.split("/")[pathName.split("/").length - 2];
         }
 
+        window.onunload = function(){
+          //memberitahu bahwa akan disconnect
+          app.ws.send(JSON.stringify({
+              from:name,
+              to: to,
+              room:room,
+              type:"disconnect"
+          }));
+        }
+
         app.ws = undefined
         app.container = undefined
         app.print = function (message) {
@@ -77,7 +87,8 @@
             app.ws.send(JSON.stringify({
                 message: messageRaw,
                 room: room,
-                to: to
+                to: to,
+                type:"message"
             }));
             var message = '<b>me</b>: ' + messageRaw
             app.print(message)
@@ -99,8 +110,19 @@
             app.container = document.querySelector('.container')
             app.ws = new WebSocket("ws://" + host + "/ws?username=" + name + "&room=" + room + "&to=" + to);
             app.ws.onopen = function() {
+                //daftarkan user ke dalam room
+                app.ws.send(JSON.stringify({
+                    room:room,
+                    type:"login"
+                }));
                 var message = '<b>me</b>: connected'
                 app.print(message)
+                //ambil data chat berdasarkan room dan pengguna
+                app.ws.send(JSON.stringify({
+                    to: to,
+                    room:room,
+                    type:"log"
+                }));
             }
             app.ws.onmessage = function (event) {
                 var res = JSON.parse(event.data);
@@ -124,7 +146,7 @@
                     }
                   }else if(type == "leave" && res.from != "" && res.to != ""){
                     if(res.from == to && res.to == name){
-                      message = 'User <b>' + res.From + '</b>: disconnected'
+                      message = 'User <b>' + res.user + '</b>: disconnected'
                     }
                   }
                 }else{
@@ -142,7 +164,7 @@
                     }
                   }else if(type == "leave" && res.from != "" && res.to != ""){
                     if(res.from == to && res.to == name){
-                      message = 'User <b>' + res.From + '</b>: disconnected'
+                      message = 'User <b>' + res.user + '</b>: disconnected'
                     }
                   }
                 }

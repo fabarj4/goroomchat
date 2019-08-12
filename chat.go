@@ -24,9 +24,11 @@ const MESSAGE_LOG = "log"
 var rooms = make(map[string][]*WebSocketConnection)
 
 type SocketPayload struct {
+	From    string `json:"from"`
 	Message string `json:"message"`
 	Room    string `json:"room"`
 	To      string `json:"to"`
+	Type    string `json:"type"`
 }
 
 type SocketResponse struct {
@@ -80,16 +82,16 @@ func HandleWS(w http.ResponseWriter, r *http.Request) {
 	}
 
 	username := r.URL.Query().Get("username")
-	room := r.URL.Query().Get("room")
+	// room := r.URL.Query().Get("room")
 	// to := r.URL.Query().Get("to")
 
 	currentConn := WebSocketConnection{Conn: currentGorillaConn, Username: username}
-	rooms[room] = append(rooms[room], &currentConn)
+	// rooms[room] = append(rooms[room], &currentConn)
 
-	go handleIO(&currentConn, room)
+	go handleIO(&currentConn)
 }
 
-func handleIO(currentConn *WebSocketConnection, room string) {
+func handleIO(currentConn *WebSocketConnection) {
 
 	defer func() {
 		if r := recover(); r != nil {
@@ -97,48 +99,58 @@ func handleIO(currentConn *WebSocketConnection, room string) {
 		}
 	}()
 
-	//buat log pertama kali untuk user
-	if err := createLog(currentConn.Username); err != nil {
-		fmt.Println(err.Error())
-		return
-	}
-
-	//ambil data dari log
-	nameFile := currentConn.Username
-	dataLogString, err := readLog(nameFile)
-	if err != nil {
-		fmt.Println(err.Error())
-		return
-	}
-
-	data := []SocketResponse{}
-	if err := json.Unmarshal([]byte(dataLogString), &data); err != nil {
-		fmt.Println(err.Error())
-		return
-	}
-
-	for _, item := range data {
-		broadcastMessage(currentConn.Username, item.Room, item.From, item.To, MESSAGE_LOG, item.Message)
-	}
-
 	for {
 		payload := SocketPayload{}
 		err := currentConn.ReadJSON(&payload)
-		if err != nil {
-			if strings.Contains(err.Error(), "websocket: close") {
-				broadcastMessage(currentConn.Username, room, currentConn.Username, payload.To, MESSAGE_LEAVE, "")
-				ejectConnection(currentConn, room)
+		if err != nil && !strings.Contains(err.Error(), "websocket: close") {
+			log.Println("ERROR", err.Error())
+		}
+		switch payload.Type {
+		case "disconnect":
+			broadcastMessage(currentConn, payload, MESSAGE_LEAVE)
+			ejectConnection(currentConn, payload.Room)
+		case "login":
+			rooms[payload.Room] = append(rooms[payload.Room], currentConn)
+		case "log":
+			//buat log pertama kali untuk user
+			if err := createLog(currentConn.Username); err != nil {
+				fmt.Println(err.Error())
 				return
 			}
 
-			log.Println("ERROR", err.Error())
-			continue
+			//ambil data dari log
+			nameFile := currentConn.Username
+			dataLogString, err := readLog(nameFile)
+			if err != nil {
+				fmt.Println(err.Error())
+				return
+			}
+
+			data := []SocketResponse{}
+			if err := json.Unmarshal([]byte(dataLogString), &data); err != nil {
+				fmt.Println(err.Error())
+				return
+			}
+
+			for _, item := range data {
+				if payload.To == "" && item.To == "" {
+					temp := SocketPayload{Message: item.Message, Room: item.Room, To: item.To, From: item.From}
+					broadcastMessage(currentConn, temp, MESSAGE_LOG)
+				} else {
+					if (item.From == payload.To || item.To == payload.To) && (item.From == currentConn.Username || item.To == currentConn.Username) {
+						temp := SocketPayload{Message: item.Message, Room: item.Room, To: item.To, From: item.From}
+						broadcastMessage(currentConn, temp, MESSAGE_LOG)
+					}
+				}
+			}
+		case "message":
+			//pencatatan ke dalam log
+			if err := writeLog(currentConn.Username, payload.To, payload.Room, payload.Message); err != nil {
+				return
+			}
+			payload.From = currentConn.Username
+			broadcastMessage(currentConn, payload, MESSAGE_CHAT)
 		}
-		//pencatatan ke dalam log
-		if err := writeLog(currentConn.Username, payload.To, payload.Room, payload.Message); err != nil {
-			return
-		}
-		broadcastMessage(currentConn.Username, room, currentConn.Username, payload.To, MESSAGE_CHAT, payload.Message)
 	}
 }
 
@@ -152,35 +164,21 @@ func ejectConnection(currentConn *WebSocketConnection, room string) {
 	}
 }
 
-func broadcastMessage(user, room, from, to, kind, message string) {
-	for _, eachConn := range rooms[room] {
-		if from == to && kind != MESSAGE_LOG {
-			// fmt.Printf("%v = %v", eachConn, currentConn)
+func broadcastMessage(currentConn *WebSocketConnection, payload SocketPayload, kind string) {
+	for _, eachConn := range rooms[payload.Room] {
+		fmt.Println(eachConn.Username)
+		if eachConn == currentConn && kind != MESSAGE_LOG {
 			continue
 		}
 
-		//pencatatan kedalam log
-		// if kind != MESSAGE_LOG && message != "" {
-		// 	if room == "" && (from == eachConn.Username || to == eachConn.Username) {
-		// 		if err := writeLog(eachConn.Username, to, "", message); err != nil {
-		// 			return
-		// 		}
-		// 	} else {
-		// 		if err := writeLog(eachConn.Username, "", room, message); err != nil {
-		// 			return
-		// 		}
-		// 	}
-		// }
-
 		eachConn.WriteJSON(SocketResponse{
-			User:    user,
-			From:    from,
+			User:    currentConn.Username,
+			From:    payload.From,
 			Type:    kind,
-			Message: message,
-			Room:    room,
-			To:      to,
+			Message: payload.Message,
+			Room:    payload.Room,
+			To:      payload.To,
 		})
-
 	}
 }
 
@@ -221,49 +219,10 @@ func writeLog(from, to, room, message string) error {
 	if err := logFile.Close(); err != nil {
 		return err
 	}
-	// if to != "" {
-	// 	//pencatatan log pengirim
-	// 	logFile, err := os.OpenFile(fmt.Sprintf("log/%s.txt", from), os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
-	// 	if err != nil {
-	// 		return err
-	// 	}
-	// 	messageData := fmt.Sprintf(`{"from":"%s", "type":"%s", "message":"%s", "room":"%s", "to":"%s"}`, from, MESSAGE_CHAT, message, room, to)
-	// 	if _, err := logFile.WriteString(fmt.Sprintf("%v\n", messageData)); err != nil {
-	// 		return err
-	// 	}
-	// 	if err := logFile.Close(); err != nil {
-	// 		return err
-	// 	}
-	// 	//pencatatan log penerima
-	// 	logFile, err = os.OpenFile(fmt.Sprintf("log/%s.txt", to), os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
-	// 	if err != nil {
-	// 		return err
-	// 	}
-	// 	messageData = fmt.Sprintf(`{"from":"%s", "type":"%s", "message":"%s", "room":"%s", "to":"%s"}`, from, MESSAGE_CHAT, message, room, to)
-	// 	if _, err := logFile.WriteString(fmt.Sprintf("%v\n", messageData)); err != nil {
-	// 		return err
-	// 	}
-	// 	if err := logFile.Close(); err != nil {
-	// 		return err
-	// 	}
-	// } else {
-	// 	logFile, err := os.OpenFile(fmt.Sprintf("log/%s.txt", room), os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
-	// 	if err != nil {
-	// 		return err
-	// 	}
-	// 	messageData := fmt.Sprintf(`{"from":"%s", "type":"%s", "message":"%s", "room":"%s", "to":"%s"}`, from, MESSAGE_CHAT, message, room, to)
-	// 	if _, err := logFile.WriteString(fmt.Sprintf("%v\n", messageData)); err != nil {
-	// 		return err
-	// 	}
-	// 	if err := logFile.Close(); err != nil {
-	// 		return err
-	// 	}
-	// }
 	return nil
 }
 
 func readLog(nameFile string) (string, error) {
-	// file, err := os.Open(fmt.Sprintf("log/%s.txt", nameFile))
 	file, err := os.Open("log/chat.txt")
 	if err != nil {
 		return "", err
