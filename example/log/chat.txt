@@ -8,3 +8,19 @@
 {"from":"fabar", "type":"chat", "message":"tes", "room":"helpdesk", "to":"admin"}
 {"from":"admin", "type":"chat", "message":"tes pin", "room":"helpdesk", "to":"veldi"}
 {"from":"admin", "type":"chat", "message":"naon?", "room":"helpdesk", "to":"veldi"}
+{"from":"admin", "type":"chat", "message":"tes", "room":"helpdesk", "to":"fabar"}
+{"from":"fabar", "type":"chat", "message":"saja", "room":"helpdesk", "to":"admin"}
+{"from":"veldi", "type":"chat", "message":"asdasd", "room":"helpdesk", "to":"admin"}
+{"from":"fabar", "type":"chat", "message":"mimin oh", "room":"helpdesk", "to":"admin"}
+{"from":"veldi", "type":"chat", "message":"mimin", "room":"helpdesk", "to":"admin"}
+{"from":"veldi", "type":"chat", "message":"tes", "room":"helpdesk", "to":"admin"}
+{"from":"veldi", "type":"chat", "message":"1", "room":"helpdesk", "to":"admin"}
+{"from":"veldi", "type":"chat", "message":"2 3", "room":"helpdesk", "to":"admin"}
+{"from":"fabar", "type":"chat", "message":"tes", "room":"helpdesk", "to":"admin"}
+{"from":"fabar", "type":"chat", "message":"sombong bener", "room":"helpdesk", "to":"admin"}
+{"from":"veldi", "type":"chat", "message":"haloo haloo", "room":"helpdesk", "to":"admin"}
+{"from":"veldi", "type":"chat", "message":"sombong banget min ga jawab", "room":"helpdesk", "to":"admin"}
+{"from":"fabar", "type":"chat", "message":"tes", "room":"helpdesk", "to":"admin"}
+{"from":"admin", "type":"chat", "message":"apa sih", "room":"helpdesk", "to":"veldi"}
+{"from":"veldi", "type":"chat", "message":"yang sopan dong", "room":"helpdesk", "to":"veldi"}
+{"from":"veldi", "type":"chat", "message":"asd", "room":"helpdesk", "to":"admin"}
