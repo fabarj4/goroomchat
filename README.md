@@ -3,7 +3,6 @@
 library ini adalah hasil pengembangan dari chat app webscoket noval agung, untuk dokumentasi asli  [klik disini](https://dasarpemrogramangolang.novalagung.com/C-28-golang-web-socket.html). dalam library ini semua chat akan disimpan dalam log dengan nama chat.txt. user dapat berkomunikasi dengan cara private chat atau group.
 
 # Features
- - setiap user yang menggunakan chat menggunakan username
  - percakapan dilakukan dengan cara private chat atau group chat
  - chat tersimpan ke dalam log, log ini digunakan untuk mengambil chat yang sebelumnya ketika halaman tertutup atau melakukan refresh
 
