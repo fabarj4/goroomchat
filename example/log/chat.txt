@@ -27,3 +27,12 @@
 {"from":"admin", "type":"chat", "message":"yo", "room":"helpdesk", "to":"veldi"}
 {"from":"admin", "type":"chat", "message":"yo", "room":"helpdesk", "to":"veldi"}
 {"from":"fabar", "type":"chat", "message":"tes", "room":"helpdesk", "to":"admin"}
+{"from":"fabar", "type":"chat", "message":"tes", "room":"", "to":"admin"}
+{"from":"veldi", "type":"chat", "message":"tes", "room":"", "to":"admin"}
+{"from":"veldi", "type":"chat", "message":"tes", "room":"", "to":"admin"}
+{"from":"fabar", "type":"chat", "message":"lol", "room":"", "to":"admin"}
+{"from":"veldi", "type":"chat", "message":"lil", "room":"", "to":"admin"}
+{"from":"fabar", "type":"chat", "message":"tes", "room":"", "to":"admin"}
+{"from":"fabar", "type":"chat", "message":"tes", "room":"", "to":"admin"}
+{"from":"fabar", "type":"chat", "message":"tes", "room":"", "to":"admin"}
+{"from":"fabar", "type":"chat", "message":"tes", "room":"", "to":"admin"}

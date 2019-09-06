@@ -108,7 +108,7 @@
             name = prompt('Enter your name please:') || "No name"
             document.querySelector('.username').innerText = name
             app.container = document.querySelector('.container')
-            app.ws = new WebSocket("ws://" + host + "/ws?username=" + name + "&room=" + room + "&to=" + to);
+            app.ws = new WebSocket("ws://" + host + "/ws?username=" + name);
             app.ws.onopen = function() {
                 //daftarkan user ke dalam room
                 app.ws.send(JSON.stringify({
